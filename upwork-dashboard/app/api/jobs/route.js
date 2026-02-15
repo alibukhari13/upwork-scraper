@@ -17,7 +17,7 @@ export async function GET() {
             .select('*')
             .order('id', { ascending: false });
 
-        if (error) throw error;
+        if (error) throw error; 
         return NextResponse.json(data || [], { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
