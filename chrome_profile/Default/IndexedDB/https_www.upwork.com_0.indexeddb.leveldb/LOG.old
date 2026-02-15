@@ -1,0 +1,14 @@
+2026/02/14-09:55:02.645 36b59 Reusing MANIFEST /home/ali-bukhari/Desktop/UpworkScraper/chrome_profile/Default/IndexedDB/https_www.upwork.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/14-09:55:02.646 36b59 Recovering log #21
+2026/02/14-09:55:02.647 36b59 Reusing old log /home/ali-bukhari/Desktop/UpworkScraper/chrome_profile/Default/IndexedDB/https_www.upwork.com_0.indexeddb.leveldb/000021.log 
+2026/02/14-09:55:02.648 36b59 Delete type=2 #20
+2026/02/14-09:55:03.730 36b59 Level-0 table #26: started
+2026/02/14-09:55:03.741 36b59 Level-0 table #26: 5088 bytes OK
+2026/02/14-09:55:03.752 36b59 Delete type=0 #21
+2026/02/14-09:55:03.754 36b59 Manual compaction at level-0 from '\x00\x0a\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0b\x00\x00\x00' @ 0 : 0; will stop at '\x00\x0a\x00\x00\x05' @ 529 : 1
+2026/02/14-09:55:03.754 36b59 Compacting 1@0 + 1@1 files
+2026/02/14-09:55:03.770 36b59 Generated table #27@0: 166 keys, 23622 bytes
+2026/02/14-09:55:03.770 36b59 Compacted 1@0 + 1@1 files => 23622 bytes
+2026/02/14-09:55:03.784 36b59 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/14-09:55:03.786 36b59 Delete type=2 #26
+2026/02/14-09:55:03.786 36b59 Manual compaction at level-0 from '\x00\x0a\x00\x00\x05' @ 529 : 1 .. '\x00\x0b\x00\x00\x00' @ 0 : 0; will stop at (end)

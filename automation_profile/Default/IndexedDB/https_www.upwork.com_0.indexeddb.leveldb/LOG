@@ -1,0 +1,25 @@
+2026/02/14-22:22:29.996 49865 Reusing MANIFEST /home/ali-bukhari/Desktop/UpworkScraper/automation_profile/Default/IndexedDB/https_www.upwork.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/14-22:22:30.010 49865 Recovering log #354
+2026/02/14-22:22:30.010 49865 Reusing old log /home/ali-bukhari/Desktop/UpworkScraper/automation_profile/Default/IndexedDB/https_www.upwork.com_0.indexeddb.leveldb/000354.log 
+2026/02/14-22:22:30.017 49865 Delete type=2 #352
+2026/02/14-22:22:31.666 49872 Level-0 table #359: started
+2026/02/14-22:22:31.683 49872 Level-0 table #359: 4367 bytes OK
+2026/02/14-22:22:31.699 49872 Delete type=0 #354
+2026/02/14-22:22:31.701 49872 Manual compaction at level-0 from '\x00p\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00q\x00\x00\x00' @ 0 : 0; will stop at '\x00q\x00\x00\x05' @ 5798 : 1
+2026/02/14-22:22:31.701 49872 Compacting 1@0 + 1@1 files
+2026/02/14-22:22:31.772 49872 Generated table #360@0: 711 keys, 312017 bytes
+2026/02/14-22:22:31.773 49872 Compacted 1@0 + 1@1 files => 312017 bytes
+2026/02/14-22:22:31.782 49872 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/14-22:22:31.783 49872 Delete type=2 #359
+2026/02/14-22:22:31.793 49863 Manual compaction at level-0 from '\x00q\x00\x00\x05' @ 5798 : 1 .. '\x00q\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/02/14-22:22:32.038 49873 Level-0 table #362: started
+2026/02/14-22:22:32.054 49873 Level-0 table #362: 994 bytes OK
+2026/02/14-22:22:32.074 49873 Delete type=0 #358
+2026/02/14-22:22:32.074 49873 Delete type=2 #356
+2026/02/14-22:22:32.075 49863 Manual compaction at level-0 from '\x00q\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00r\x00\x00\x00' @ 0 : 0; will stop at '\x00q\x00\x00\x05' @ 5835 : 0
+2026/02/14-22:22:32.076 49863 Compacting 1@0 + 1@1 files
+2026/02/14-22:22:32.237 49863 Generated table #363@0: 710 keys, 311309 bytes
+2026/02/14-22:22:32.238 49863 Compacted 1@0 + 1@1 files => 311309 bytes
+2026/02/14-22:22:32.249 49863 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/14-22:22:32.250 49863 Delete type=2 #362
+2026/02/14-22:22:32.251 49863 Manual compaction at level-0 from '\x00q\x00\x00\x05' @ 5835 : 0 .. '\x00r\x00\x00\x00' @ 0 : 0; will stop at (end)

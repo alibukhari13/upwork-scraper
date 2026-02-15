@@ -1,0 +1,6 @@
+2026/02/14-09:48:10.377 36833 Reusing MANIFEST /home/ali-bukhari/Desktop/UpworkScraper/chrome_profile/Default/Local Storage/leveldb/MANIFEST-000001
+2026/02/14-09:48:10.412 36833 Recovering log #32
+2026/02/14-09:48:10.419 36833 Reusing old log /home/ali-bukhari/Desktop/UpworkScraper/chrome_profile/Default/Local Storage/leveldb/000032.log 
+2026/02/14-09:50:14.744 36836 Level-0 table #36: started
+2026/02/14-09:50:14.764 36836 Level-0 table #36: 23487 bytes OK
+2026/02/14-09:50:14.776 36836 Delete type=0 #32
