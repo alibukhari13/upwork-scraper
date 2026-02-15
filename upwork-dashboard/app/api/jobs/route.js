@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server'
 
 // Vercel aur Local dono ke liye configuration
 const supabase = createClient(
-  process.env.SUPABASE_URL || "APNA_SUPABASE_URL_YAHA_BHI_DALEN", 
-  process.env.SUPABASE_KEY || "APNA_SUPABASE_ANON_KEY_YAHA_BHI_DALEN"
+  process.env.SUPABASE_URL || "https://zpgcldllammzlxkktpfv.supabase.co", 
+  process.env.SUPABASE_KEY || "sb_publishable_GT0CtQWcAdRGNfGGPd5GVg_zubsqSyy"
 )
 
 export const dynamic = 'force-dynamic';
