@@ -4,19 +4,20 @@ import os
 import time
 import re
 import logging
+from datetime import datetime
 from supabase import create_client
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from utils.database import create_db, connect_to_db
-from settings import config 
+from settings import config
 
-# --- SUPABASE CONFIG ---
-SUPABASE_URL = "https://zpgcldllammzlxkktpfv.supabase.co"
-SUPABASE_KEY = "sb_publishable_GT0CtQWcAdRGNfGGPd5GVg_zubsqSyy"
+# --- SUPABASE CONFIG (Lazmi check karein) ---
+SUPABASE_URL = "AAPKA_SUPABASE_URL_YAHA_DALEN"
+SUPABASE_KEY = "AAPKI_SUPABASE_ANON_KEY_YAHA_DALEN"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Logging Setup
+# --- LOGGING SETUP ---
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('[%(levelname)s] %(asctime)s: %(message)s')
@@ -27,6 +28,7 @@ logger.addHandler(ch)
 def scrape_cycle():
     driver = None
     try:
+        logger.info('--- 2026 ULTIMATE MASTER CLOUD MODE STARTING ---')
         options = uc.ChromeOptions()
         options.add_argument('--start-maximized')
         profile_path = os.path.join(os.getcwd(), "automation_profile")
@@ -35,48 +37,122 @@ def scrape_cycle():
         driver = uc.Chrome(options=options, version_main=144)
 
         if driver:
+            # 1. Open My Feed
             driver.get('https://www.upwork.com/nx/find-work/')
-            logger.info("Page opening... Waiting 30s")
-            time.sleep(30) 
+            logger.info("Page khul gaya hai. 45 seconds wait karein...")
+            time.sleep(45) 
 
-            # My Feed Tab
+            # 2. Click "My Feed" Tab
             try:
                 feed_tab = driver.find_element(By.XPATH, "//button[contains(., 'My Feed')]")
                 driver.execute_script("arguments[0].click();", feed_tab)
+                logger.info("Switched to My Feed Tab.")
                 time.sleep(10)
             except: pass
 
-            # Scraping logic
-            sniffer_js = "return Array.from(document.links).filter(l => l.href.includes('/jobs/~')).map(l => ({url: l.href.split('?')[0], title: l.innerText.trim(), text: l.closest('article')?.innerText || ''}))"
-            raw_data = driver.execute_script(sniffer_js)
-            
-            if raw_data:
-                for item in reversed(raw_data):
-                    job_id = item['url'].split('~')[-1].strip('/')
+            load_count = 1
+            keep_scraping = True
+            all_cycle_jobs = [] 
+            seen_urls_in_cycle = set()
+
+            # --- BATCH BY BATCH LOGIC (5 Batches) ---
+            while keep_scraping and load_count <= 5:
+                logger.info(f"--- Scraping Batch {load_count} ---")
+                
+                for _ in range(10):
+                    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                    time.sleep(1.5)
+
+                sniffer_js = """
+                function sniff() {
+                    let results = [];
+                    let links = document.querySelectorAll('a[href*="/jobs/"], a[href*="/details/"]');
+                    links.forEach(l => {
+                        let container = l.closest('article') || l.closest('section') || l.parentElement.parentElement.parentElement;
+                        if (container && container.innerText.length > 100) {
+                            results.push({
+                                url: l.href.split('?')[0],
+                                title: l.innerText.trim() || "Web Job",
+                                text: container.innerText
+                            });
+                        }
+                    });
+                    return results;
+                }
+                return sniff();
+                """
+                raw_data = driver.execute_script(sniffer_js)
+                
+                if not raw_data:
+                    logger.warning("Jobs nahi milin. Batch skipping...")
+                    time.sleep(10)
+                    break
+
+                for item in raw_data:
+                    if item['url'] not in seen_urls_in_cycle:
+                        all_cycle_jobs.append(item)
+                        seen_urls_in_cycle.add(item['url'])
+
+                # STOP TRIGGER: 1-Day Limit
+                current_batch_text = " ".join([j['text'].lower() for j in raw_data])
+                if any(x in current_batch_text for x in ["2 days ago", "3 days ago", "weeks ago"]):
+                    logger.info("Limit Reached: 2+ days old jobs found.")
+                    keep_scraping = False
+                    break
+
+                # LEARN MORE AUTOMATION
+                if keep_scraping and load_count < 5:
+                    try:
+                        more_btn_js = "return Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('More') || b.innerText.includes('Learn'))"
+                        more_btn = driver.execute_script(more_btn_js)
+                        if more_btn:
+                            logger.info(f"Clicking 'Learn More' for Batch {load_count + 1}...")
+                            driver.execute_script("arguments[0].scrollIntoView();", more_btn)
+                            time.sleep(2)
+                            driver.execute_script("arguments[0].click();", more_btn)
+                            load_count += 1
+                            time.sleep(12) 
+                        else: keep_scraping = False
+                    except: keep_scraping = False
+                else: keep_scraping = False
+
+            # --- SUPABASE CLOUD INSERTION (In Sequence) ---
+            new_jobs_saved = 0
+            for item in reversed(all_cycle_jobs):
+                url = item['url']
+                job_id = url.split('~')[-1].strip('/')
+                title = item['title'].split('\n')[0].strip()
+                description = item['text']
+
+                keywords = ['web', 'dev', 'html', 'js', 'css', 'react', 'api', 'node', 'next', 'angular', 'php', 'laravel', 'figma']
+                if any(k in (title + description).lower() for k in keywords):
                     
-                    # Supabase check if exists
+                    # Duplicate Check in Cloud
                     exists = supabase.table('jobs').select('id').eq('job_id', job_id).execute()
                     
                     if not exists.data:
+                        logger.info(f"CLOUD SAVING: {title[:50]}")
                         data = {
                             "job_id": job_id,
-                            "job_url": item['url'],
-                            "job_title": item['title'] or "Web Job",
+                            "job_url": url,
+                            "job_title": title,
                             "posted_date": "Just Scraped",
-                            "job_description": item['text'][:2000],
-                            "job_tags": "Web Dev",
-                            "job_proposals": "0"
+                            "job_description": description[:1500],
+                            "job_tags": "Web Developer",
+                            "job_proposals": "Less than 5"
                         }
                         supabase.table('jobs').insert(data).execute()
-                        logger.info(f"CLOUD SAVED: {item['title'][:50]}")
+                        new_jobs_saved += 1
 
+            logger.info(f"Cycle Done. Batches: {load_count}. Cloud Added: {new_jobs_saved}")
             driver.quit()
+
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Global Error: {e}")
         if driver: driver.quit()
 
 if __name__ == '__main__':
     while True:
         scrape_cycle()
-        logger.info("Cycle finished. Next in 60s...")
-        time.sleep(60)
+        logger.info("Waiting 40s for next cloud-sync...")
+        time.sleep(40)
