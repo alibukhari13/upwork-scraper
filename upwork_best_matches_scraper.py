@@ -9,7 +9,7 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from utils.database import create_db, connect_to_db
-from settings import config
+from settings import config 
 
 # --- SUPABASE CONFIG ---
 SUPABASE_URL = "https://zpgcldllammzlxkktpfv.supabase.co"
