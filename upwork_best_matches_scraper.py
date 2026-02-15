@@ -13,8 +13,9 @@ from utils.database import create_db, connect_to_db
 from settings import config
 
 # --- SUPABASE CONFIG (Lazmi check karein) ---
-SUPABASE_URL = "AAPKA_SUPABASE_URL_YAHA_DALEN"
-SUPABASE_KEY = "AAPKI_SUPABASE_ANON_KEY_YAHA_DALEN"
+SUPABASE_URL = "https://zpgcldllammzlxkktpfv.supabase.co"
+SUPABASE_KEY = "sb_publishable_GT0CtQWcAdRGNfGGPd5GVg_zubsqSyy"
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- LOGGING SETUP ---
