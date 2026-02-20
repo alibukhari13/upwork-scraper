@@ -27,7 +27,7 @@ logger.addHandler(ch)
 def scrape_cycle():
     driver = None
     try:
-        logger.info('--- STARTING FRESH RELOAD & SCRAPE CYCLE ---')
+        logger.info('--- STARTING CLEAN DEEP DATA SCRAPE CYCLE ---')
         options = uc.ChromeOptions()
         options.add_argument('--start-maximized')
         profile_path = os.path.join(os.getcwd(), "automation_profile")
@@ -70,19 +70,33 @@ def scrape_cycle():
                     links.forEach(l => {
                         let art = l.closest('article') || l.closest('section') || l.parentElement.parentElement.parentElement;
                         if (art && art.innerText.length > 100) {
+                            let fullText = art.innerText;
+                            
                             let skillElements = art.querySelectorAll('[data-test="skill"], .air3-token, .job-tile-skills .up-skill-badge');
                             let tags = Array.from(skillElements).map(s => s.innerText.trim()).filter(s => s.length > 0).join(', ');
+                            
                             let location = art.querySelector('[data-test="client-country"], .job-tile-location')?.innerText || "Unknown";
                             let spent = art.querySelector('[data-test="client-spendings"]')?.innerText || "$0 spent";
-                            let rating = art.querySelector('.air3-rating-number')?.innerText || "No rating";
-                            let verified = art.querySelector('[data-test="payment-verified"]') ? "Verified" : "Unverified";
                             
-                            // --- UPDATED BUDGET LOGIC ---
+                            let verified = "Unverified";
+                            if (art.querySelector('[data-test="payment-verified"]') || art.querySelector('.air3-icon-verified') || fullText.includes("Payment verified")) {
+                                verified = "Verified";
+                            }
+                            
                             let budgetType = art.querySelector('[data-test="job-type"]')?.innerText || "";
-                            let budgetAmount = art.querySelector('[data-test="budget"]')?.innerText || "";
-                            let finalBudget = budgetType + (budgetAmount ? ": " + budgetAmount : "");
-                            if (!finalBudget) finalBudget = "N/A";
-                            // ---------------------------
+                            let budgetVal = art.querySelector('[data-test="budget"], [data-test="hourly-rate"]')?.innerText || "";
+                            let finalBudget = budgetType + (budgetVal ? ": " + budgetVal : "");
+
+                            // --- MERGED DURATION & HOURS LOGIC ---
+                            let duration = art.querySelector('[data-test="duration"]')?.innerText || "";
+                            let hours = art.querySelector('[data-test="hours-per-week"]')?.innerText || "";
+                            let finalDuration = duration + (hours ? ", " + hours : "");
+                            if (!finalDuration) finalDuration = "N/A";
+
+                            let expLevel = "Not specified";
+                            if (fullText.includes("Expert")) expLevel = "Expert";
+                            else if (fullText.includes("Intermediate")) expLevel = "Intermediate";
+                            else if (fullText.includes("Entry level")) expLevel = "Entry Level";
 
                             let proposals = art.querySelector('[data-test="proposals"]')?.innerText || "N/A";
                             let timeElement = art.querySelector('[data-test="posted-on"]') || Array.from(art.querySelectorAll('span, small')).find(s => s.innerText.toLowerCase().includes('posted'));
@@ -90,12 +104,13 @@ def scrape_cycle():
                             results.push({
                                 url: l.href.split('?')[0],
                                 title: l.innerText.trim() || "Web Job",
-                                text: art.querySelector('[data-test="job-description-text"]')?.innerText || art.innerText,
+                                text: art.querySelector('[data-test="job-description-text"]')?.innerText || fullText,
                                 location: location,
                                 spent: spent,
-                                rating: rating,
                                 verified: verified,
-                                budget: finalBudget,
+                                budget: finalBudget || "N/A",
+                                experience: expLevel,
+                                duration: finalDuration,
                                 proposals: proposals,
                                 tags: tags || "Web Development",
                                 exact_time: timeElement ? timeElement.innerText.replace('Posted', '').trim() : "Recently"
@@ -128,18 +143,19 @@ def scrape_cycle():
             new_saved = 0
             for item in reversed(all_cycle_jobs):
                 job_id = item['url'].split('~')[-1].strip('/')
-                if any(k in (item['title'] + item['text']).lower() for k in ['web', 'dev', 'html', 'js', 'react', 'api', 'node', 'php', 'laravel', 'shopify', 'wordpress', 'figma']):
+                if any(k in (item['title'] + item['text']).lower() for k in ['web', 'dev', 'html', 'js', 'react', 'api', 'node', 'php', 'laravel', 'shopify', 'wordpress', 'figma', 'design']):
                     try:
                         exists = supabase.table('jobs').select('id').eq('job_id', job_id).execute()
                         if not exists.data:
-                            logger.info(f"CLOUD SAVING: {item['title'][:40]} | {item['budget']}")
+                            logger.info(f"CLOUD SAVING: {item['title'][:35]} | {item['budget']}")
                             supabase.table('jobs').insert({
                                 "job_id": job_id, "job_url": item['url'], "job_title": item['title'],
                                 "posted_date": item['exact_time'], "job_description": item['text'],
                                 "job_tags": item['tags'], "job_proposals": item['proposals'],
                                 "client_location": item['location'], "client_spent": item['spent'],
-                                "client_rating": item['rating'], "is_verified": item['verified'],
-                                "budget": item['budget']
+                                "is_verified": item['verified'],
+                                "budget": item['budget'], "experience_level": item['experience'],
+                                "project_duration": item['duration']
                             }).execute()
                             new_saved += 1
                     except: pass
