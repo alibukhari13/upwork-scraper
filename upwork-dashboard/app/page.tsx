@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import ProposalModal from "@/components/ProposalModal";
-import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -47,37 +47,10 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#020617] text-slate-100 font-sans antialiased text-[14px]">
-      
-      {/* AI MODAL OVERLAY */}
       {selectedJob && <ProposalModal job={selectedJob} onClose={() => setSelectedJob(null)} />}
+      
+      <Sidebar isSyncing={isSyncing} />
 
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r border-slate-800/60 bg-[#0B1120] lg:flex shadow-2xl z-40">
-        <div className="flex h-24 items-center gap-4 px-8 border-b border-slate-800/50">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 shadow-lg shadow-emerald-500/20 rotate-3">
-            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          </div>
-          <span className="text-2xl font-black tracking-tighter uppercase text-white">Job<span className="text-emerald-500">Pulse</span></span>
-        </div>
-        <nav className="flex-1 p-6 space-y-3">
-          <div className="flex items-center gap-3 rounded-2xl bg-emerald-500/10 px-5 py-4 text-emerald-400 font-bold border border-emerald-500/20 shadow-inner">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-            Live Monitor
-          </div>
-          <Link href="/history" className="flex items-center gap-3 rounded-2xl px-5 py-4 text-slate-400 hover:bg-slate-800 transition-all font-bold">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            AI History
-          </Link>
-        </nav>
-        <div className="p-8 border-t border-slate-800/50 text-center">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 border border-slate-800`}>
-              <div className={`h-2 w-2 rounded-full ${isSyncing ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{isSyncing ? 'Syncing' : 'System Live'}</span>
-            </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
       <main className="flex-1 p-4 lg:ml-72 lg:p-12">
         <div className="mx-auto max-w-5xl">
           <header className="mb-12 flex flex-col justify-between gap-8 md:flex-row md:items-end">

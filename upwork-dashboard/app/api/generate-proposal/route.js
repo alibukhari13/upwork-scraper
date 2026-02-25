@@ -12,54 +12,46 @@ export async function POST(req) {
     try {
         const job = await req.json();
 
-        // 1. History se User ka style uthana
-        const { data: history } = await supabase
-            .from('proposals')
-            .select('proposal_text')
-            .order('updated_at', { ascending: false })
-            .limit(3);
+        // 1. Fetch Custom Format
+        const { data: format } = await supabase.from('proposal_format').select('*').order('order_index', { ascending: true });
+        let formatInstructions = "MANDATORY PROPOSAL STRUCTURE (Follow this exact order):\n";
+        format?.forEach((f, i) => {
+            formatInstructions += `${i+1}. ${f.section_name}: ${f.section_instruction}\n`;
+        });
 
-        let styleContext = "";
-        if (history && history.length > 0) {
-            styleContext = "User's preferred writing style (Follow this tone):\n" + 
-                           history.map(h => h.proposal_text).join("\n---\n");
-        }
+        // 2. Fetch Portfolio
+        const { data: portfolio } = await supabase.from('portfolio').select('*');
+        let portfolioContext = "MY PORTFOLIO PROJECTS:\n" + 
+                               portfolio?.map(p => `- ${p.project_name}: ${p.project_description} (Link: ${p.project_link})`).join("\n");
 
-        // 2. Skill-Focused Prompt (Rating Removed)
+        // 3. Fetch History (Style Training)
+        const { data: history } = await supabase.from('proposals').select('proposal_text').order('updated_at', { ascending: false }).limit(3);
+        let styleContext = "User's Writing Style Examples:\n" + history?.map(h => h.proposal_text).join("\n---\n");
+
         const prompt = `
-        You are a top-rated Upwork Freelancer. Write a high-converting, personalized proposal.
-        
-        CRITICAL TASK:
-        Highlight the required skills: ${job.job_tags}. 
-        Explain briefly how your expertise in these specific technologies makes you the perfect fit.
+        You are a professional Upwork Freelancer. Write a winning proposal.
 
-        JOB DETAILS:
+        ${formatInstructions}
+
+        JOB CONTEXT:
         - Title: ${job.job_title}
         - Description: ${job.job_description}
-        - Budget/Rate: ${job.budget}
-        - Experience Level: ${job.experience_level}
-        - Project Duration: ${job.project_duration}
+        - Skills: ${job.job_tags}
+        - Client Location: ${job.client_location}
 
-        CLIENT CONTEXT:
-        - Location: ${job.client_location}
-        - Total Spent: ${job.client_spent}
-        - Payment Status: ${job.is_verified}
+        ${portfolioContext}
 
         ${styleContext}
 
-        INSTRUCTIONS:
-        - Start with a strong hook related to the job.
-        - Focus on the technical skills mentioned (${job.job_tags}).
-        - Keep it professional, concise, and avoid generic templates.
-        - End with a call to action (e.g., inviting them to a chat).
+        FINAL RULES:
+        - Strictly follow the numbered structure provided above.
+        - Only mention portfolio projects if they directly relate to the job.
+        - Keep the tone professional but high-energy.
         `;
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
-            messages: [
-                { role: "system", content: "You are a professional Upwork proposal expert who focuses on technical skills." },
-                { role: "user", content: prompt }
-            ],
+            messages: [{ role: "system", content: "You are a professional Upwork proposal writer." }, { role: "user", content: prompt }],
             temperature: 0.7,
         });
 
