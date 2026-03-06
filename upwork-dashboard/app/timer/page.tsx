@@ -9,7 +9,7 @@ export default function TimerPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings")
+    fetch("/api/settings-s/timer")
       .then((res) => res.json())
       .then((data) => {
         const totalMins = data.expiry_minutes || 0;
@@ -21,11 +21,10 @@ export default function TimerPage() {
 
   const saveTimer = async () => {
     setLoading(true);
-    // Independent calculation for H, M, S
     const totalMinutes = (Number(h) * 60) + Number(m) + (Number(s) / 60);
 
     try {
-      await fetch("/api/settings", {
+      await fetch("/api/settings-s/timer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ expiry_minutes: totalMinutes }),
@@ -60,7 +59,7 @@ export default function TimerPage() {
                     type="number" 
                     value={unit.val} 
                     onChange={(e) => unit.set(Math.max(0, Number(e.target.value)))}
-                    className="w-full bg-transparent text-4xl font-black text-white outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full bg-transparent text-4xl font-black text-white outline-none text-center"
                   />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-4">{unit.label}</span>
