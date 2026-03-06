@@ -4,45 +4,38 @@ import { useState, useEffect, useCallback } from "react";
 import ProposalModal from "@/components/ProposalModal";
 import Sidebar from "@/components/Sidebar";
 
-// --- PREMIUM BOXED TIMER COMPONENT (UTC & INSTANT PURGE FIX) ---
+// --- PREMIUM BOXED TIMER COMPONENT (DYNAMIC UPDATE FIX) ---
 function JobTimer({ createdAt, expiryMins, onExpire }: { createdAt: string, expiryMins: number, onExpire: () => void }) {
   const [time, setTime] = useState({ h: "00", m: "00", s: "00" });
 
   useEffect(() => {
     const calculateTime = () => {
-      // Convert Supabase UTC string to local timestamp for accuracy
       const createdDate = new Date(createdAt).getTime();
       const expiryTime = createdDate + (expiryMins * 60 * 1000);
       const now = new Date().getTime();
       const diff = expiryTime - now;
 
       if (diff <= 0) {
-        onExpire(); // Trigger instant deletion from UI and DB
+        onExpire(); 
         return false;
+      } else {
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        setTime({
+          h: h.toString().padStart(2, '0'),
+          m: m.toString().padStart(2, '0'),
+          s: s.toString().padStart(2, '0')
+        });
+        return true;
       }
-
-      const h = Math.floor(diff / (1000 * 60 * 60));
-      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      setTime({
-        h: h.toString().padStart(2, '0'),
-        m: m.toString().padStart(2, '0'),
-        s: s.toString().padStart(2, '0')
-      });
-      return true;
     };
 
-    const hasTimeLeft = calculateTime();
-    if (!hasTimeLeft) return;
-
-    const interval = setInterval(() => {
-      const stillRunning = calculateTime();
-      if (!stillRunning) clearInterval(interval);
-    }, 1000);
-
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
     return () => clearInterval(interval);
-  }, [createdAt, expiryMins, onExpire]);
+  }, [createdAt, expiryMins, onExpire]); // expiryMins added as dependency
 
   return (
     <div className="flex gap-1 items-center">
@@ -78,7 +71,7 @@ export default function Dashboard() {
       const data = await res.json();
       if (Array.isArray(data)) setJobs(data);
       
-      const sRes = await fetch("/api/settings-s");
+      const sRes = await fetch("/api/settings-s/timer");
       const sData = await sRes.json();
       setExpiryMins(sData.expiry_minutes);
     } catch (err) { console.log("Sync Error"); }
@@ -92,7 +85,6 @@ export default function Dashboard() {
   }, [fetchJobs]);
 
   const handleIgnore = useCallback(async (jobId: string) => {
-    // Optimistic UI update
     setJobs((prev) => prev.filter((job) => job.job_id !== jobId));
     try {
       await fetch(`/api/jobs?id=${jobId}`, { method: "DELETE" });
@@ -152,7 +144,6 @@ export default function Dashboard() {
                         <span className="bg-purple-500/10 text-purple-400 text-[9px] font-bold px-3 py-1 rounded-lg border border-purple-500/20 uppercase tracking-widest">{job.experience_level}</span>
                       </div>
                       
-                      {/* TIMER & IGNORE BUTTON - TOP RIGHT ALIGNMENT */}
                       <div className="flex items-center gap-6">
                         <JobTimer 
                           createdAt={job.created_at} 
@@ -168,7 +159,6 @@ export default function Dashboard() {
 
                     <a href={job.job_url} target="_blank" className="text-3xl font-black text-white hover:text-emerald-400 transition-colors leading-[1.1] tracking-tight">{job.job_title}</a>
                     
-                    {/* SKILLS TAGS SECTION */}
                     <div className="flex flex-wrap gap-2">
                       {job.job_tags?.split(',').map((tag: string, i: number) => (
                         <span key={i} className="bg-slate-900 text-slate-400 text-[10px] font-bold px-4 py-1.5 rounded-xl border border-slate-800 transition-colors">{tag.trim()}</span>
@@ -185,7 +175,7 @@ export default function Dashboard() {
                     <div className="relative">
                       <p className={`text-slate-400 text-base leading-relaxed font-medium italic ${!isExpanded ? 'line-clamp-3' : ''}`}>{job.job_description}</p>
                       {job.job_description?.length > 200 && (
-                        <button onClick={() => toggleDescription(job.job_id)} className="text-emerald-500 text-[11px] font-black uppercase mt-4 hover:text-emerald-400 transition-all flex items-center gap-2">
+                        <button onClick={() => toggleDescription(job.job_id)} className="text-emerald-500 text-[11px] font-black uppercase tracking-[0.2em] mt-4 hover:text-emerald-400 transition-all flex items-center gap-2">
                           {isExpanded ? "↑ Collapse Details" : "↓ Expand Full Description"}
                         </button>
                       )}

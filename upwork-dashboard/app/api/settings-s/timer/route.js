@@ -7,8 +7,12 @@ const supabase = createClient(
 );
 
 export async function GET() {
-    const { data } = await supabase.from('settings').select('expiry_minutes').eq('id', 1).single();
-    return NextResponse.json(data || { expiry_minutes: 360 });
+    try {
+        const { data } = await supabase.from('settings').select('expiry_minutes').eq('id', 1).single();
+        return NextResponse.json(data || { expiry_minutes: 360 });
+    } catch (error) {
+        return NextResponse.json({ expiry_minutes: 360 });
+    }
 }
 
 export async function POST(req) {
