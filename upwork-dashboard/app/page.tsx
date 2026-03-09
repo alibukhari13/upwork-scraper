@@ -4,23 +4,22 @@ import { useState, useEffect, useCallback } from "react";
 import ProposalModal from "@/components/ProposalModal";
 import Sidebar from "@/components/Sidebar";
 
-// --- PREMIUM BOXED TIMER COMPONENT (UTC & DYNAMIC SYNC FIX) ---
+// --- PREMIUM BOXED TIMER COMPONENT (UTC & INSTANT PURGE FIX) ---
 function JobTimer({ createdAt, expiryMins, onExpire }: { createdAt: string, expiryMins: number, onExpire: () => void }) {
   const [time, setTime] = useState({ h: "00", m: "00", s: "00" });
 
   useEffect(() => {
-    // Agar expiryMins load nahi hua ya 0 hai, to timer start na karo
     if (!expiryMins || expiryMins <= 0) return;
 
     const calculateTime = () => {
-      // Convert Supabase UTC string to local timestamp for 100% accuracy
+      // Convert Supabase UTC string to local timestamp for accuracy
       const createdDate = new Date(createdAt).getTime();
       const expiryTime = createdDate + (expiryMins * 60 * 1000);
       const now = new Date().getTime();
       const diff = expiryTime - now;
 
       if (diff <= 0) {
-        onExpire(); // Trigger instant deletion from UI and DB
+        onExpire(); // Trigger instant deletion
         return false;
       } else {
         const h = Math.floor(diff / (1000 * 60 * 60));
@@ -61,7 +60,7 @@ function JobTimer({ createdAt, expiryMins, onExpire }: { createdAt: string, expi
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState<any[]>([]);
-  const [expiryMins, setExpiryMins] = useState(0); // Default 0 to prevent early deletion
+  const [expiryMins, setExpiryMins] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSyncing, setIsSyncing] = useState(false);
   const [expandedJobs, setExpandedJobs] = useState<Record<string, boolean>>({});
@@ -71,12 +70,12 @@ export default function Dashboard() {
   const fetchJobs = useCallback(async () => {
     setIsSyncing(true);
     try {
-      // 1. Pehle Settings fetch karein taake sahi timer milay
+      // 1. Fetch Settings
       const sRes = await fetch("/api/settings-s/timer");
       const sData = await sRes.json();
       if (sData.expiry_minutes) setExpiryMins(sData.expiry_minutes);
 
-      // 2. Phir Jobs fetch karein
+      // 2. Fetch Jobs
       const res = await fetch(`/api/jobs?t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       if (Array.isArray(data)) setJobs(data);
@@ -150,8 +149,8 @@ export default function Dashboard() {
                         <span className="bg-purple-500/10 text-purple-400 text-[9px] font-bold px-3 py-1 rounded-lg border border-purple-500/20 uppercase tracking-widest">{job.experience_level}</span>
                       </div>
                       
+                      {/* TIMER & IGNORE BUTTON - TOP RIGHT ALIGNMENT */}
                       <div className="flex items-center gap-6">
-                        {/* TIMER ONLY SHOWS WHEN EXPIRY MINS IS LOADED */}
                         {expiryMins > 0 && (
                           <JobTimer 
                             createdAt={job.created_at} 
@@ -159,7 +158,7 @@ export default function Dashboard() {
                             onExpire={() => handleIgnore(job.job_id)} 
                           />
                         )}
-                        <button onClick={() => handleIgnore(job.job_id)} className="flex items-center gap-2 text-slate-600 hover:text-red-400 transition-all group/btn">
+                        <button onClick={() => handleIgnore(job.job_id)} className="text-slate-600 hover:text-red-400 transition-all group/btn">
                           <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/btn:opacity-100 transition-opacity">Ignore</span>
                           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
@@ -168,6 +167,7 @@ export default function Dashboard() {
 
                     <a href={job.job_url} target="_blank" className="text-3xl font-black text-white hover:text-emerald-400 transition-colors leading-[1.1] tracking-tight">{job.job_title}</a>
                     
+                    {/* SKILLS TAGS SECTION */}
                     <div className="flex flex-wrap gap-2">
                       {job.job_tags?.split(',').map((tag: string, i: number) => (
                         <span key={i} className="bg-slate-900 text-slate-400 text-[10px] font-bold px-4 py-1.5 rounded-xl border border-slate-800 transition-colors">{tag.trim()}</span>

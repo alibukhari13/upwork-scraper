@@ -10,22 +10,21 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        // 1. Database se setting uthao (No hardcoded default here)
+        // 1. Settings fetch karein
         const { data: settings } = await supabase.from('settings').select('expiry_minutes').eq('id', 1).single();
         
-        // 2. Sirf tab delete karo agar setting mojud ho
+        // 2. SAFETY CHECK: Agar setting nahi mili ya 0 hai, to delete mat karo
         if (settings && settings.expiry_minutes > 0) {
             const expiryMins = settings.expiry_minutes;
-            const cutoffTime = new Date(Date.now() - expiryMins * 60 * 1000).toISOString();
             
-            console.log(`Deleting jobs older than ${expiryMins} minutes. Cutoff: ${cutoffTime}`);
+            // UTC based calculation (Server side)
+            // Hum 1 minute ka extra buffer de rahe hain sync issues ke liye
+            const cutoffTime = new Date(Date.now() - (expiryMins * 60 * 1000)).toISOString();
             
-            const { error: delError } = await supabase
+            await supabase
                 .from('jobs')
                 .delete()
                 .lt('created_at', cutoffTime);
-                
-            if (delError) console.error("Auto-delete error:", delError);
         }
 
         // 3. Fetch Jobs
@@ -35,7 +34,12 @@ export async function GET() {
             .order('id', { ascending: false });
 
         if (error) throw error; 
-        return NextResponse.json(jobs, { headers: { 'Cache-Control': 'no-store' } });
+        
+        return NextResponse.json(jobs, { 
+            headers: { 
+                'Cache-Control': 'no-store, max-age=0, must-revalidate' 
+            } 
+        });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
