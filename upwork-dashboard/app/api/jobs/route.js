@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server'
 const supabase = createClient(
   process.env.SUPABASE_URL || "https://vdhylaaoljrvvqrygsom.supabase.co", 
   process.env.SUPABASE_KEY || "ssb_publishable_rPyfp5viSf77gGqxc0w27g_k2hI3QuI"
+//   process.env.SUPABASE_URL || "https://zpgcldllammzlxkktpfv.supabase.co", 
+//   process.env.SUPABASE_KEY || "sb_publishable_GT0CtQWcAdRGNfGGPd5GVg_zubsqSyy"
 )
 
 export const dynamic = 'force-dynamic';
